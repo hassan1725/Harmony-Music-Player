@@ -4,6 +4,7 @@ export class AudioPlayer {
   private source: MediaElementAudioSourceNode | null = null;
   private bassFilter: BiquadFilterNode | null = null;
   private trebleFilter: BiquadFilterNode | null = null;
+  public analyser: AnalyserNode | null = null;
   public initialized = false;
 
   constructor() {
@@ -31,10 +32,14 @@ export class AudioPlayer {
     this.trebleFilter.type = 'highshelf';
     this.trebleFilter.frequency.value = 3000;
 
+    this.analyser = this.context.createAnalyser();
+    this.analyser.fftSize = 256;
+
     // Connect node chain
     this.source.connect(this.bassFilter);
     this.bassFilter.connect(this.trebleFilter);
-    this.trebleFilter.connect(this.context.destination);
+    this.trebleFilter.connect(this.analyser);
+    this.analyser.connect(this.context.destination);
     
     this.initialized = true;
   }

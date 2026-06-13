@@ -18,6 +18,32 @@ export const PlayerBar = ({ setView }: { setView: (v: string) => void }) => {
 
   useEffect(() => {
     if (currentSong) {
+      if ('mediaSession' in navigator) {
+        navigator.mediaSession.metadata = new MediaMetadata({
+          title: currentSong.title,
+          artist: currentSong.artist || 'Unknown Artist',
+          album: currentSong.album || 'Unknown Album',
+          artwork: currentSong.coverUrl ? [
+            { src: currentSong.coverUrl, sizes: '512x512', type: 'image/jpeg' }
+          ] : []
+        });
+
+        navigator.mediaSession.setActionHandler('play', () => {
+          playerInstance.play().catch(console.error);
+          useStore.getState().setPlaying(true);
+        });
+        navigator.mediaSession.setActionHandler('pause', () => {
+          playerInstance.pause();
+          useStore.getState().setPlaying(false);
+        });
+        navigator.mediaSession.setActionHandler('previoustrack', () => {
+          prevSong();
+        });
+        navigator.mediaSession.setActionHandler('nexttrack', () => {
+          nextSong();
+        });
+      }
+
       if (currentSong.file && !currentSong.url) {
          const url = URL.createObjectURL(currentSong.file);
          playerInstance.setSrc(url);

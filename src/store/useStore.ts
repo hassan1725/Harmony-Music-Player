@@ -73,6 +73,8 @@ export const useStore = create<PlayerState>()(
         isPlaying: !state.isPlaying 
       })),
 
+      setPlaying: (isPlaying: boolean) => set({ isPlaying }),
+
       nextSong: () => set((state) => {
         if (state.queue.length === 0) return state;
         

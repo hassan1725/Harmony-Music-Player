@@ -40,6 +40,7 @@ export interface AppState {
   updateSong?: (id: string, updates: Partial<Song>) => void;
   playSong: (songOrIndex: number | string, contextQueue?: string[]) => void;
   togglePlayPause: () => void;
+  setPlaying: (playing: boolean) => void;
   nextSong: () => void;
   prevSong: () => void;
   setVolume: (volume: number) => void;

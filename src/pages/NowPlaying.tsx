@@ -36,19 +36,41 @@ export const NowPlaying = () => {
       const bars = 60;
       const barWidth = canvas.width / bars;
       
+      let dataArray: Uint8Array | null = null;
+      if (playerInstance.analyser && isPlaying) {
+        dataArray = new Uint8Array(playerInstance.analyser.frequencyBinCount);
+        playerInstance.analyser.getByteFrequencyData(dataArray);
+      }
+      
       for (let i = 0; i < bars; i++) {
-        // Random height if playing, otherwise flat
-        const height = isPlaying ? Math.random() * canvas.height * 0.8 : canvas.height * 0.05;
+        let value = 0;
+        if (dataArray && isPlaying) {
+           // Mapping 60 bars to 128 bins
+           const mappedIndex = Math.floor(i * (128 / bars));
+           value = dataArray[mappedIndex] || 0;
+        }
+        
+        // Target height based on frequency data (0-255 map to 0-canvasHeight)
+        const targetHeight = isPlaying ? (value / 255) * canvas.height * 0.9 : canvas.height * 0.05;
+        // Apply some minimum height even if frequency is low
+        const height = Math.max(targetHeight, canvas.height * 0.05);
+
         const x = i * barWidth;
         const y = canvas.height - height;
         
         const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-        gradient.addColorStop(0, 'rgba(59, 130, 246, 0.8)');
-        gradient.addColorStop(1, 'rgba(99, 102, 241, 0.2)');
+        gradient.addColorStop(0, 'rgba(59, 130, 246, 0.9)');
+        gradient.addColorStop(1, 'rgba(99, 102, 241, 0.3)');
         
         ctx.fillStyle = gradient;
-        // Draw with small gap
-        ctx.fillRect(x, y, barWidth - 2, height);
+        
+        ctx.beginPath();
+        if (ctx.roundRect) {
+           ctx.roundRect(x, y, barWidth - 4, height, canvas.height * 0.05);
+        } else {
+           ctx.fillRect(x, y, barWidth - 4, height);
+        }
+        ctx.fill();
       }
     };
 
